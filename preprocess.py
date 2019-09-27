@@ -2,14 +2,19 @@ import os
 import nltk
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
+from nltk.tokenize import word_tokenize
+from nltk.stem import PorterStemmer
+from nltk.stem import LancasterStemmer
+from nltk.stem import WordNetLemmatizer
 
 
 # Reads positive and negative file and returns array of dicts representing the features vector as well as array of labels
 # Label is 1 for positive, 0 for negative
 # type: Type of further processing
-#   None    : regular unigram of words
-#   "lemma" : perform lemmatization of the words
-#   "stem"  : perform stemming of the words
+#   None         : regular unigram of words
+#   "lemma"      : perform lemmatization of the words
+#   "lancaster"  : perform stemming of the words using lancaster algorithm
+#   "porter"     : perform stemming of the words using porter algorithm
 def processFiles(positive, negative, processingType=None, partitions=0):
     # Read in files as sentence
     positiveCorpus = readSentences(positive)
@@ -40,6 +45,13 @@ def processFiles(positive, negative, processingType=None, partitions=0):
         corpusData.append(x)
         corpusLabels.append(y)
 
+    # Perform any stemming or lemmatization here
+    if processingType == 'lemma':
+        corpusData = lemmatize(corpusData)
+    elif processingType == 'porter' or processingType == 'lancaster':
+        corpusData = stem(corpusData, processingType)
+    
+
     vectorizer = CountVectorizer()
 
     #Learn the whole vocabulary
@@ -67,8 +79,8 @@ def readSentences(filename):
 # Function that partitions data accordingly
 # Simple simply creates a validation and test set based on the testRatio, k is ignored, returns (testData, testLabels, validationData, validationLabels)
 # k-cross type ignores testRatio and returns a dict with the k partitions as (data, label) tuples
-def partition(corpusData, corpusLabels, type, testRatio=0.9, k=5):
-    if type == 'simple':
+def partition(corpusData, corpusLabels, partType, testRatio=0.9, k=5):
+    if partType == 'simple':
         numInTest = int(round(len(corpusData) * testRatio))
 
         testData = corpusData[0:numInTest]
@@ -78,7 +90,57 @@ def partition(corpusData, corpusLabels, type, testRatio=0.9, k=5):
         validationLabels = corpusLabels[numInTest:]
 
         return (testData,testLabels,validationData,validationLabels)
-    elif type == 'k-cross':
+    elif partType == 'k-cross':
         return None
     else:
         return None
+
+# Stems a corpus according to either the porter stemmer or lancaster one
+# takes in a corpus as a list of sentences and returns the stemmed version of those sentences in the same order
+def stem(corpus, stemType='lancaster'):
+    stemmedSentences = []
+
+    stemmer = LancasterStemmer() if stemType=='lancaster' else PorterStemmer()
+
+    #for each sentence in the corpus
+    for sentence in corpus:
+
+        #tokenize the sentence to get the words
+        tokens = word_tokenize(sentence)
+        
+        stemmedSentence = ""
+        
+        # Go through each word and tokenize it
+        for word in tokens:
+            #stem each word and then add it to the stemmed sentence
+            stemmedSentence += stemmer.stem(word) + " "
+
+        # Once all words have been stemmed we have the stemmed version of the sentence and we append it to list
+        stemmedSentences.append(stemmedSentence)
+        
+    # Return the stemmed sentences
+    return stemmedSentences
+
+# Lemmatizes a corpus consisting of a list of sentences
+def lemmatize(corpus):
+    # Create the lemmatizer object
+    lemmatizer = WordNetLemmatizer()
+
+    #For each sentence in the list
+    lemmatizedSentences = []
+    for sentence in corpus:
+        lemmatizedSentence = ""
+
+        #tokenize each sentence
+        tokens = word_tokenize(sentence)
+
+        #For each token we lemmatize and make the sentence again
+        for word in tokens:
+            lemmatizedSentence += lemmatizer.lemmatize(word) + " "
+
+        lemmatizedSentences.append(lemmatizedSentence)
+
+    return lemmatizedSentences
+
+
+

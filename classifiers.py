@@ -1,5 +1,7 @@
+import numpy as np
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
+
 
 # We try 4 classifiers to see which one gives best results
 
@@ -15,6 +17,15 @@ def classifier(model, training_data, training_labels, validation_data, validatio
 
     #add accuracy to measures
     measures['accuracy']=evaluate_acc(predicted,validation_labels)
+
+    return measures
+
+def randomClassifier(training_data, training_labels, validation_data, validation_labels):
+    measures={}
+
+    predictedArray = np.random.randint(2, size=len(validation_labels))
+
+    measures['accuracy']=evaluate_acc(predictedArray, validation_labels)
 
     return measures
 
