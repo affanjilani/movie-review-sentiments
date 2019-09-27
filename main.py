@@ -1,18 +1,8 @@
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.linear_model import LogisticRegression
 from preprocess import readSentences, processFiles, vectorizeData, partition
+from classifiers import classifier
 import numpy as np
-
-# Computes accuracy using prediction values and true values
-def evaluate_acc(prediction, true):
-    sum = 0
-
-    #if we get true positive or true negative we add it to the sum
-    for y, yhat in zip(prediction,true):
-        sum = sum+1 if y == yhat else sum
-    
-    accuracy = sum/prediction.shape[0]
-
-    return accuracy
 
 corpusData, corpusLabels, vectorizer = processFiles('rt-polarity.pos','rt-polarity.neg')
 
@@ -23,13 +13,10 @@ testData, testLabels, validationData, validationLabels = partition(corpusData=co
 testData = vectorizeData(testData,vectorizer)
 validationData = vectorizeData(validationData,vectorizer)
 
-#try naive bayes
-clf = MultinomialNB().fit(testData, testLabels)
+bayes_measures = classifier(MultinomialNB(),testData,testLabels,validationData, validationLabels)
+logistic_measures = classifier(LogisticRegression(solver='lbfgs', max_iter=500),testData,testLabels,validationData,validationLabels)
 
-# predict
-predicted = clf.predict(validationData)
+print(bayes_measures, logistic_measures)
 
-#accuracy
-print(evaluate_acc(predicted,validationLabels))
 
 
