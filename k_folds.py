@@ -38,11 +38,9 @@ def k_folds(k, model, corpusData, corpusLabels, vectorizer):
         # transform training_data into matrix of counts
         training_data = vectorizeData(training_data,vectorizer)
 
-        print('lengths training', training_data.shape, len(training_labels),validation_data.shape,len(validation_labels))
-
         #fit the model, predict and get accuracy
         accuracy_fold_k = classifier(model_for_k, training_data, training_labels, validation_data, validation_labels)
-        print('accuracy',accuracy_fold_k)
+
         accuracySum+=accuracy_fold_k['accuracy']
 
     #compute mean accuracy of model across folds

@@ -25,7 +25,7 @@ testData, testLabels = partition(corpusData=corpusData, corpusLabels=corpusLabel
 
 # print(bayes_measures, logistic_measures, svm_measures, random_measures)
 
-bayes_measures = k_folds(5,MultinomialNB(),corpusData, corpusLabels, vectorizer)
+bayes_measures = k_folds(5,LogisticRegression(solver='lbfgs', max_iter=500),corpusData, corpusLabels, vectorizer)
 
 print(bayes_measures)
 
