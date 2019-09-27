@@ -5,15 +5,14 @@ from preprocess import readSentences, processFiles, vectorizeData, partition
 from classifiers import classifier, randomClassifier
 import numpy as np
 from preprocess import stem, lemmatize
+from k_folds import k_folds
+
 
 corpusData, corpusLabels, vectorizer = processFiles('rt-polarity.pos','rt-polarity.neg',processingType='lemma')
 
 #partition data
 testData, testLabels = partition(corpusData=corpusData, corpusLabels=corpusLabels,partType='k-cross', k=5)
 
-print(len(corpusData))
-print([len(liste) for liste in testData])
-print(len(testData))
 
 #vectorize the testData and validation data
 # testData = vectorizeData(testData,vectorizer)
@@ -25,6 +24,10 @@ print(len(testData))
 # random_measures = randomClassifier(testData, testLabels, validationData, validationLabels)
 
 # print(bayes_measures, logistic_measures, svm_measures, random_measures)
+
+bayes_measures = k_folds(5,MultinomialNB(),corpusData, corpusLabels, vectorizer)
+
+print(bayes_measures)
 
 
 
