@@ -6,6 +6,9 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
 from nltk.stem import LancasterStemmer
 from nltk.stem import WordNetLemmatizer
+from nltk.corpus import stopwords
+
+nltk.download('stopwords')
 
 
 # Reads positive and negative file and returns array of dicts representing the features vector as well as array of labels
@@ -14,13 +17,22 @@ from nltk.stem import WordNetLemmatizer
 #   None         : regular unigram of words
 #   "lemma"      : perform lemmatization of the words
 #   "lancaster"  : perform stemming of the words using lancaster algorithm
-#   "porter"     : perform stemming of the words using porter algorithm
-def processFiles(positive, negative, processingType=None):
+#   "porter"     : perform stemming of the words using porter algorithm 
+#   "stop"       : remove stop words
+def processFiles(positive, negative, processingType=None, min_df=1):
     # Read in files as sentence
     positiveCorpus = readSentences(positive)
     negativeCorpus = readSentences(negative)
 
     fullCorpus = positiveCorpus + negativeCorpus
+
+    # Perform any stemming or lemmatization here
+    if processingType == 'lemma':
+        fullCorpus = lemmatize(fullCorpus)
+    elif processingType == 'porter' or processingType == 'lancaster':
+        fullCorpus = stem(fullCorpus, processingType)
+    elif processingType == 'stop':
+        fullCorpus = removeStopWords(fullCorpus)
 
     #create the labels array, we know the first half of the corpus is positive(1) and second half negative(0)
     corpusLabels = []
@@ -44,15 +56,9 @@ def processFiles(positive, negative, processingType=None):
     for x,y in dataAndLabels:
         corpusData.append(x)
         corpusLabels.append(y)
-
-    # Perform any stemming or lemmatization here
-    if processingType == 'lemma':
-        corpusData = lemmatize(corpusData)
-    elif processingType == 'porter' or processingType == 'lancaster':
-        corpusData = stem(corpusData, processingType)
     
 
-    vectorizer = CountVectorizer()
+    vectorizer = CountVectorizer(min_df=min_df)
 
     #Learn the whole vocabulary
     vectorizer.fit(fullCorpus)
@@ -170,6 +176,31 @@ def lemmatize(corpus):
         lemmatizedSentences.append(lemmatizedSentence)
 
     return lemmatizedSentences
+
+# Takes in a list of sentences as the corpus and outputs a list of those sentences without the stop words
+def removeStopWords(corpus):
+    sentencesWithoutStops = []
+
+    stop_words = set(stopwords.words('english'))
+
+    # for each sentence to remove stop words 
+    for sentence in corpus:
+        sentenceWithoutStops = ""
+
+        # tokenize it so we have only the words
+        tokens = word_tokenize(sentence)
+
+        # for each of the words
+        for word in tokens:
+            # If the word is not in the list of stop words add it to the sentence
+            if word not in stop_words:
+                sentenceWithoutStops += word + " "
+
+        # Append the new sentence to the master list
+        sentencesWithoutStops.append(sentenceWithoutStops)
+
+    return sentencesWithoutStops
+
 
 
 
