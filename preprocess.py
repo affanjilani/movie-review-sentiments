@@ -10,7 +10,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 #   None    : regular unigram of words
 #   "lemma" : perform lemmatization of the words
 #   "stem"  : perform stemming of the words
-def processFiles(positive, negative, processingType=None):
+def processFiles(positive, negative, processingType=None, partitions=0):
     # Read in files as sentence
     positiveCorpus = readSentences(positive)
     negativeCorpus = readSentences(negative)
@@ -40,21 +40,45 @@ def processFiles(positive, negative, processingType=None):
         corpusData.append(x)
         corpusLabels.append(y)
 
-    # Create vector of unigrams for whole corpus
-    vect = CountVectorizer()
+    vectorizer = CountVectorizer()
 
+    #Learn the whole vocabulary
+    vectorizer.fit(fullCorpus)
+
+    #return set
+    return  (corpusData, corpusLabels, vectorizer)
+
+# Takes in the corpus data to count and returns the sparse matrix containing the counts
+def vectorizeData(corpusData,vectorizer):
     # Creates nxm matrix and puts in the counts for each word in vocabulary
     # n is the number of samples
     # m is the features count
-    dataCounts = vect.fit_transform(corpusData)
+    dataCounts = vectorizer.transform(corpusData)
 
+    return  dataCounts
 
-
-    #return set
-    return  (dataCounts, corpusLabels)
 
 #Reads in sentences from designated file and returns tuple  
 def readSentences(filename):
     sentences = tuple(open(os.path.join('./rt-polaritydata/',filename)))
 
     return sentences
+
+# Function that partitions data accordingly
+# Simple simply creates a validation and test set based on the testRatio, k is ignored, returns (testData, testLabels, validationData, validationLabels)
+# k-cross type ignores testRatio and returns a dict with the k partitions as (data, label) tuples
+def partition(corpusData, corpusLabels, type, testRatio=0.9, k=5):
+    if type == 'simple':
+        numInTest = int(round(len(corpusData) * testRatio))
+
+        testData = corpusData[0:numInTest]
+        testLabels = corpusLabels[0:numInTest]
+
+        validationData = corpusData[numInTest:]
+        validationLabels = corpusLabels[numInTest:]
+
+        return (testData,testLabels,validationData,validationLabels)
+    elif type == 'k-cross':
+        return None
+    else:
+        return None
