@@ -6,12 +6,12 @@ from classifiers import classifier, randomClassifier
 import numpy as np
 from preprocess import stem, lemmatize
 from k_folds import k_folds
+from model_selection import getModelAccuracies
 
-
-corpusData, corpusLabels, vectorizer = processFiles('rt-polarity.pos','rt-polarity.neg',processingType='lemma')
+corpusData, corpusLabels, vectorizer = processFiles('rt-polarity.pos','rt-polarity.neg',processingType=None)
 
 #partition data
-testData, testLabels = partition(corpusData=corpusData, corpusLabels=corpusLabels,partType='k-cross', k=5)
+#testData, testLabels = partition(corpusData=corpusData, corpusLabels=corpusLabels,partType='k-cross', k=5)
 
 
 #vectorize the testData and validation data
@@ -24,10 +24,13 @@ testData, testLabels = partition(corpusData=corpusData, corpusLabels=corpusLabel
 # random_measures = randomClassifier(testData, testLabels, validationData, validationLabels)
 
 # print(bayes_measures, logistic_measures, svm_measures, random_measures)
+names = ['Naive Bayes', 'Logistic Regression', 'Linear SVM']
+models = [MultinomialNB(),LogisticRegression(solver='lbfgs', max_iter=500),svm.LinearSVC()]
+models = zip(models,names)
 
-bayes_measures = k_folds(5,LogisticRegression(solver='lbfgs', max_iter=500),corpusData, corpusLabels, vectorizer)
+accuracies = getModelAccuracies(models,corpusData,corpusLabels,vectorizer, 5)
 
-print(bayes_measures)
+print(accuracies)
 
 
 
