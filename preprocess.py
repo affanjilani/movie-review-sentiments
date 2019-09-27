@@ -15,7 +15,7 @@ from nltk.stem import WordNetLemmatizer
 #   "lemma"      : perform lemmatization of the words
 #   "lancaster"  : perform stemming of the words using lancaster algorithm
 #   "porter"     : perform stemming of the words using porter algorithm
-def processFiles(positive, negative, processingType=None, partitions=0):
+def processFiles(positive, negative, processingType=None):
     # Read in files as sentence
     positiveCorpus = readSentences(positive)
     negativeCorpus = readSentences(negative)
@@ -78,7 +78,7 @@ def readSentences(filename):
 
 # Function that partitions data accordingly
 # Simple simply creates a validation and test set based on the testRatio, k is ignored, returns (testData, testLabels, validationData, validationLabels)
-# k-cross type ignores testRatio and returns a dict with the k partitions as (data, label) tuples
+# k-cross type ignores testRatio and returns a tuple (dataPartitions, labelPartitions) where dataPartitions is a list of a list of sentences
 def partition(corpusData, corpusLabels, partType, testRatio=0.9, k=5):
     if partType == 'simple':
         numInTest = int(round(len(corpusData) * testRatio))
@@ -91,7 +91,36 @@ def partition(corpusData, corpusLabels, partType, testRatio=0.9, k=5):
 
         return (testData,testLabels,validationData,validationLabels)
     elif partType == 'k-cross':
-        return None
+        dataPartitions = []
+        labelsPartitions = []
+
+        # Figure out how many elements in each partition if perfectly divisible by k
+        num_elems_in_partitions = int(len(corpusLabels)/k)
+        
+        # Figure out how many elements are left, will be less than k
+        left_over = int(len(corpusLabels) - (num_elems_in_partitions * k))
+
+        end = 0
+        # We partition the data
+        for partition in range(k):
+
+            # start at index we last stopped at
+            start = end
+            # depending on how many elements are left over, we add an extra element to the partition
+            end = start + num_elems_in_partitions + 1 if partition < left_over else start+num_elems_in_partitions 
+
+            # get the subset of data in this partition
+            dataSubset = corpusData[start:end]
+
+            # get the subset of labels in this partition
+            labelSubset = corpusLabels[start:end]
+
+            # Add the subsets to the right lists
+            dataPartitions.append(dataSubset)
+            labelsPartitions.append(labelSubset)
+
+
+        return (dataPartitions, labelsPartitions)
     else:
         return None
 
