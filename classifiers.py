@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix
 
 
 # We try 4 classifiers to see which one gives best results
@@ -17,6 +18,9 @@ def classifier(model, training_data, training_labels, validation_data, validatio
 
     #add accuracy to measures
     measures['accuracy']=evaluate_acc(predicted,validation_labels)
+
+    #add confusion matrix to measures
+    measures['confusionMatrix']=confusion_matrix(validation_labels,predicted)
 
     return measures
 

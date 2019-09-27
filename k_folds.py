@@ -9,7 +9,7 @@ def k_folds(k, model, corpusData, corpusLabels, vectorizer):
     accuracySum = 0
 
     #Get partitions
-    dataPartitions, labelPartitions = partition(corpusData=corpusData,corpusLabels=corpusLabels,partType='k-cross', k=5)
+    dataPartitions, labelPartitions = partition(corpusData=corpusData,corpusLabels=corpusLabels,partType='k-cross', k=10)
 
     #For each validation partition
     for vali_partition in range(k):
