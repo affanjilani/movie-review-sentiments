@@ -79,6 +79,6 @@ def createModelConfusionMatrix(model, proc_type, min_df=1, partitionRatio=0.95):
 
 compareModels()
 
-createModelConfusionMatrix(MultinomialNB(),None)
+#createModelConfusionMatrix(MultinomialNB(),None)
 
 
